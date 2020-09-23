@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.Ticketing.Booking.DAO.BookingDAO;
 import com.Ticketing.Booking.Entities.Booking;
+import com.Ticketing.Booking.Entities.Shows;
 
 @Service
 @Transactional
@@ -17,7 +18,7 @@ public class BookingService {
 	@Autowired
 	BookingDAO bookingDao;
 	
-	public Optional<Booking> getBooking(String username) {
+	public List<Booking> getBooking(String username) {
 		return this.bookingDao.findBookingByUserName(username);
 	}
 
@@ -29,19 +30,18 @@ public class BookingService {
 		return this.bookingDao.save(booking);
 	}
 
-	public void deleteBooking(String username) {
-		this.bookingDao.deleteByUserName(username);
-		
-	}
-
-	public void cancelBooking(String username, int bookingId) {
-		// TODO Auto-generated method stub
+	public void deleteBooking(int bookingId) {
+		this.bookingDao.deleteById(bookingId);
 		
 	}
 
 	public Optional<Booking> getBooking(String username, int bookingId) {
 		return this.bookingDao.findBookingByUserNameAndId(username, bookingId);
 		
+	}
+
+	public Optional<Booking> getBookingWithId(int bookingId) {
+		return this.bookingDao.findBookingById(bookingId);
 	}
 
 }

@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.Ticketing.Theatre.DAO.ShowsDAO;
 import com.Ticketing.Theatre.DAO.TheatreDAO;
 import com.Ticketing.Theatre.Entity.Theatre;
 
@@ -17,9 +16,6 @@ public class TheatreService {
 	
 	@Autowired
 	TheatreDAO theatreDao;
-	
-	@Autowired
-	ShowsDAO showsDao;
 
 	public Optional<Theatre> getTheatre(String theatreName) {
 		return this.theatreDao.findByTheatreName(theatreName);

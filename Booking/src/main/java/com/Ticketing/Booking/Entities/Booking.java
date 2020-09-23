@@ -29,6 +29,9 @@ public class Booking {
 	@Column(name = "MOVIENAME")
 	private String movieName;
 	
+	@Column(name = "THEATRENAME")
+	private String theatreName;
+	
 	@Column(name = "SHOWNAME")
 	private String showName;
 
@@ -107,6 +110,14 @@ public class Booking {
 
 	public void setCancelled(Boolean cancelled) {
 		this.cancelled = cancelled;
+	}
+
+	public String getTheatreName() {
+		return theatreName;
+	}
+
+	public void setTheatreName(String theatreName) {
+		this.theatreName = theatreName;
 	}
 
 }

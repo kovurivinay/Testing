@@ -63,9 +63,13 @@ public class MovieController {
 	}
 	
 	@PostMapping("/movie")
-	public ResponseEntity<Movie> addNewMovie(@RequestBody Movie movie, @RequestParam("Role") String role) {
+	public ResponseEntity<Object> addNewMovie(@RequestBody Movie movie, @RequestParam("Role") String role) {
 		try {
 			if(role.equalsIgnoreCase("admin")){
+				Optional<Movie> fetchedmovie = this.movieService.getMovie(movie.getMovieName());
+				if (fetchedmovie.isPresent()) {
+					return new ResponseEntity<>("Movie name taken!", HttpStatus.BAD_REQUEST);
+				}
 				return ResponseEntity.ok(this.movieService.addMovie(movie));
 			}
 			return ResponseEntity.badRequest().build();
@@ -76,10 +80,21 @@ public class MovieController {
 	
 
 	@PutMapping("/movie/{movieName}")
-	public ResponseEntity<Movie> updateMovie(@RequestBody Movie movie, @RequestParam("Role") String role) {
+	public ResponseEntity<Object> updateMovie(@PathVariable String movieName, @RequestBody Movie movie, @RequestParam("Role") String role) {
 		try {
 			if(role.equalsIgnoreCase("admin")){
-				this.movieService.addMovie(movie);
+				Optional<Movie> fetchedmovie = this.movieService.getMovie(movie.getMovieName());
+				if (fetchedmovie.isPresent()) {
+					return new ResponseEntity<>("Movie name taken!", HttpStatus.BAD_REQUEST);
+				}
+				Movie retrievedMovie = fetchedmovie.get();
+				retrievedMovie.setGenre(movie.getGenre());
+				retrievedMovie.setLanguage(movie.getLanguage());
+				retrievedMovie.setMovieName(movie.getMovieName());
+				retrievedMovie.setRating(movie.getRating());
+				retrievedMovie.setReleaseDate(movie.getReleaseDate());
+				
+				this.movieService.addMovie(retrievedMovie);
 				return ResponseEntity.ok().build();
 			}
 			return ResponseEntity.badRequest().build();

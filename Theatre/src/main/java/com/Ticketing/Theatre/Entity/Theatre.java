@@ -24,15 +24,15 @@ public class Theatre {
 	@Column(name = "MOVIENAME")
 	private String movieName;
 	
-	@OneToMany(mappedBy = "theatre", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private List<Shows> Shows;
-	
-	@Column(name = "LANGUAGE")
-	private String language;
+	@Column(name = "LOCATION")
+	private String location;
 	
 	@Column(name = "THEATRENAME")
-	private Integer theatreName;
+	private String theatreName;
 
+	@Column(name = "CAPACITY")
+	private Integer seatingCapacity;
+	
 	public int getId() {
 		return id;
 	}
@@ -49,28 +49,28 @@ public class Theatre {
 		this.movieName = movieName;
 	}
 
-	public List<Shows> getShows() {
-		return Shows;
+	public String getLocation() {
+		return location;
 	}
 
-	public void setShows(List<Shows> shows) {
-		Shows = shows;
+	public void setLocation(String location) {
+		this.location = location;
 	}
 
-	public String getLanguage() {
-		return language;
-	}
-
-	public void setLanguage(String language) {
-		this.language = language;
-	}
-
-	public Integer getTheatreName() {
+	public String getTheatreName() {
 		return theatreName;
 	}
 
-	public void setTheatreName(Integer theatreName) {
+	public void setTheatreName(String theatreName) {
 		this.theatreName = theatreName;
+	}
+
+	public Integer getSeatingCapacity() {
+		return seatingCapacity;
+	}
+
+	public void setSeatingCapacity(Integer seatingCapacity) {
+		this.seatingCapacity = seatingCapacity;
 	}
 	
 

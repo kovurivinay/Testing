@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -61,9 +62,13 @@ public class TheatreController {
 	}
 	
 	@PostMapping("/theatre")
-	public ResponseEntity<Theatre> addNewTheatre(@RequestBody Theatre theatre, @RequestParam("Role") String role) {
+	public ResponseEntity<Object> addNewTheatre(@RequestBody Theatre theatre, @RequestParam("Role") String role) {
 		try {
 			if(role.equalsIgnoreCase("admin")){
+				Optional<Theatre> fetchedtheatre = this.theatreService.getTheatre(theatre.getTheatreName());
+				if (fetchedtheatre.isPresent()) {
+					return new ResponseEntity<>("Theatre name taken!", HttpStatus.BAD_REQUEST);
+				}
 				return ResponseEntity.ok(this.theatreService.addTheatre(theatre));
 			}
 			return ResponseEntity.badRequest().build();
@@ -77,7 +82,13 @@ public class TheatreController {
 	public ResponseEntity<Theatre> updateTheatre(@RequestBody Theatre theatre, @RequestParam("Role") String role) {
 		try {
 			if(role.equalsIgnoreCase("admin")){
-				this.theatreService.addTheatre(theatre);
+				Optional<Theatre> retrievedtheatre = this.theatreService.getTheatre(theatre.getTheatreName());
+				Theatre fetchedTheatre = retrievedtheatre.get();
+				fetchedTheatre.setTheatreName(theatre.getTheatreName());
+				fetchedTheatre.setLocation(theatre.getLocation());
+				fetchedTheatre.setMovieName(theatre.getMovieName());
+				
+				this.theatreService.addTheatre(fetchedTheatre);
 				return ResponseEntity.ok().build();
 			}
 			return ResponseEntity.badRequest().build();

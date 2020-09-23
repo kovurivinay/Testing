@@ -1,9 +1,10 @@
-package com.Ticketing.Theatre.Controller;
+package com.Ticketing.Booking.Controller;
 
 import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -16,9 +17,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.Ticketing.Theatre.DAO.ShowsDAO;
-import com.Ticketing.Theatre.Entity.Shows;
-import com.Ticketing.Theatre.Service.ShowsService;
+import com.Ticketing.Booking.DAO.ShowsDAO;
+import com.Ticketing.Booking.Entities.Shows;
+import com.Ticketing.Booking.Service.ShowsService;
 
 @RestController
 @RequestMapping("/")
@@ -35,14 +36,40 @@ public class ShowsController {
 		return "Hello from Shows Service";
 	}
 	
-	@GetMapping("/shows/{showsName}")
-	public ResponseEntity<Shows> getShows(@PathVariable String showsName) {
+	@GetMapping("/showsByShow/{showsName}")
+	public ResponseEntity<Object> getShows(@PathVariable String showsName) {
 		try {
-			Optional<Shows> shows = this.showsService.getShows(showsName);
-			if (!shows.isPresent()) {
+			List<Shows> shows = this.showsService.getShows(showsName);
+			if (shows.isEmpty()) {
 				return ResponseEntity.notFound().build();
 			}
-			return ResponseEntity.ok(shows.get());
+			return ResponseEntity.ok(shows);
+		} catch (Exception e) {
+			return ResponseEntity.badRequest().build();
+		}
+	}
+	
+	@GetMapping("/showsByMovie/{movieName}")
+	public ResponseEntity<Object> getShowWithMovieName(@PathVariable String movieName) {
+		try {
+			List<Shows> shows = this.showsService.getShowsWithMovie(movieName);
+			if (shows.isEmpty()) {
+				return ResponseEntity.notFound().build();
+			}
+			return ResponseEntity.ok(shows);
+		} catch (Exception e) {
+			return ResponseEntity.badRequest().build();
+		}
+	}
+	
+	@GetMapping("/showsByTheatre/{theatreName}")
+	public ResponseEntity<Object> getShowWithTheatreName(@PathVariable String theatreName) {
+		try {
+			List<Shows> shows = this.showsService.getShowsWithTheatre(theatreName);
+			if (shows.isEmpty()) {
+				return ResponseEntity.notFound().build();
+			}
+			return ResponseEntity.ok(shows);
 		} catch (Exception e) {
 			return ResponseEntity.badRequest().build();
 		}
@@ -71,11 +98,22 @@ public class ShowsController {
 	}
 	
 
-	@PutMapping("/shows/{showsName}")
-	public ResponseEntity<Shows> updateShows(@RequestBody Shows shows, @RequestParam("Role") String role) {
+	@PutMapping("/shows/{showsId}")
+	public ResponseEntity<Object> updateShows(@PathVariable int showsId, @RequestBody Shows shows, @RequestParam("Role") String role) {
 		try {
 			if(role.equalsIgnoreCase("admin")){
-				this.showsService.addShows(shows);
+				Optional<Shows> retrievedShow = this.showsService.getShowsWithId(showsId);
+				if (!retrievedShow.isPresent()) {
+					return new ResponseEntity<>("Show not found! ", HttpStatus.BAD_REQUEST);
+				}
+				Shows fetchedshow = retrievedShow.get();
+				fetchedshow.setCost(shows.getCost());
+				fetchedshow.setMovieName(shows.getMovieName());
+				fetchedshow.setSeatingCapacity(shows.getSeatingCapacity());
+				fetchedshow.setShowName(shows.getShowName());
+				fetchedshow.setTheatreName(shows.getTheatreName());
+				fetchedshow.setDate(shows.getDate());
+				this.showsDao.save(fetchedshow);
 				return ResponseEntity.ok().build();
 			}
 			return ResponseEntity.badRequest().build();
@@ -84,11 +122,11 @@ public class ShowsController {
 		}
 	}
 
-	@DeleteMapping("/shows/{showsName}")
-	public ResponseEntity<Shows> deleteShows(@PathVariable String showsName, @RequestParam("Role") String role) {
+	@DeleteMapping("/shows/{showsId}")
+	public ResponseEntity<Shows> deleteShows(@PathVariable int showsId, @RequestParam("Role") String role) {
 		try {
 			if(role.equalsIgnoreCase("admin")){
-				this.showsService.deleteShows(showsName);
+				this.showsService.deleteShows(showsId);
 				return ResponseEntity.ok().build();
 			}
 			return ResponseEntity.badRequest().build();

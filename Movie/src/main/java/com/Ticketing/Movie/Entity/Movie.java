@@ -10,6 +10,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 
 @Entity
 @Table(name = "MOVIE")
@@ -33,6 +35,7 @@ public class Movie {
 	private Integer rating;
 	
 	@Column(name = "RELEASEDATE")
+	@JsonFormat(shape=JsonFormat.Shape.STRING, pattern="dd-MM-yyyy")
 	private Date releaseDate;
 
 	public int getId() {

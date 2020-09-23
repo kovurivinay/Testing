@@ -1,4 +1,4 @@
-package com.Ticketing.Login.Entity;
+package com.Ticketing.User.Entity;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -20,8 +20,8 @@ public class User {
 	@Column(name = "EMAIL")
 	private String email;
 	
-	@Column(name = "NAME")
-	private String name;
+	@Column(name = "USERNAME")
+	private String userName;
 	
 	@Column(name = "PASSWORD")
 	private String password;
@@ -45,12 +45,12 @@ public class User {
 		this.email = email;
 	}
 
-	public String getName() {
-		return name;
+	public String getUserName() {
+		return userName;
 	}
 
-	public void setName(String name) {
-		this.name = name;
+	public void setUserName(String userName) {
+		this.userName = userName;
 	}
 
 	public String getPassword() {

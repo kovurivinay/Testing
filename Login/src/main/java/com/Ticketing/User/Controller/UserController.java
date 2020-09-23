@@ -1,4 +1,4 @@
-package com.Ticketing.Login.Controller;
+package com.Ticketing.User.Controller;
 
 import java.sql.Timestamp;
 import java.util.Date;
@@ -10,27 +10,31 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.Ticketing.Login.DAO.LoginDAO;
-import com.Ticketing.Login.Service.LoginService;
-import com.Ticketing.Login.Entity.User;
+import com.Ticketing.User.Entity.User;
+import com.Ticketing.User.DAO.UserDAO;
+import com.Ticketing.User.Entity.User;
+import com.Ticketing.User.Service.UserService;
 
 @RestController
 @RequestMapping("/")
 @CrossOrigin("*") 
-public class LoginController {
+public class UserController {
 
 	@Autowired
-	LoginService loginService;
+	UserService userService;
 	
 	@Autowired
-	LoginDAO userDao;
+	UserDAO userDao;
 	
 	@RequestMapping("/")
 	public String home() {
@@ -79,13 +83,10 @@ public class LoginController {
 				return new ResponseEntity<>("FAILURE-Email_Exists", HttpStatus.BAD_REQUEST);
 			}
 
-			String accessToken = String.valueOf(new Random(System.nanoTime()).nextInt(10000));
-//			Date d = new Date();
-//			java.sql.Timestamp datepresent = new Timestamp(d.getTime());
 			User user = new User();
 			user.setPassword(req.getPassword());
 			user.setEmail(email);
-			user.setName(req.getName());
+			user.setUserName(req.getUserName());
 			user.setRole(req.getRole());
 			user = userDao.save(user);
 			System.out.println("User saved!");
@@ -98,4 +99,55 @@ public class LoginController {
 
 	
 	}
+	
+	@GetMapping("/users")
+	public ResponseEntity<List<User>> getAllUsers(@RequestParam("Role") String role) {
+		try {
+			if(role.equalsIgnoreCase("admin")){
+				List<User> user = this.userService.getAllUsers();
+				return ResponseEntity.ok(user);
+			}
+			return ResponseEntity.badRequest().build();
+		} catch (Exception e) {
+			return ResponseEntity.badRequest().build();
+		}
+	}
+	
+	@PutMapping("/user/{email}")
+	public ResponseEntity<Object> updateUser(@PathVariable String email, @RequestBody User user, @RequestParam("Role") String role) {
+		try {
+			if(role.equalsIgnoreCase("admin")){
+				List<User> users = userDao.findUserByEmail(email);
+				if (users.size() == 0) {
+					return new ResponseEntity<>("FAILURE-Email does not Exists", HttpStatus.BAD_REQUEST);
+				}
+				User fetchedUser = users.get(0);
+				fetchedUser.setEmail(user.getEmail());
+				fetchedUser.setUserName(user.getUserName());
+				fetchedUser.setPassword(user.getPassword());
+				fetchedUser.setRole(user.getRole());
+				
+				this.userService.addUser(user);
+				return ResponseEntity.ok().build();
+			}
+			return ResponseEntity.badRequest().build();
+		} catch (Exception e) {
+			return ResponseEntity.badRequest().build();
+		}
+	}
+
+	@DeleteMapping("/user/{email}")
+	public ResponseEntity<User> deleteUser(@PathVariable String email, @RequestParam("Role") String role) {
+		try {
+			if(role.equalsIgnoreCase("admin")){
+				this.userService.deleteUser(email);
+				return ResponseEntity.ok().build();
+			}
+			return ResponseEntity.badRequest().build();
+		} catch (Exception e) {
+			return ResponseEntity.badRequest().build();
+		}
+	}
+	
+	
 }

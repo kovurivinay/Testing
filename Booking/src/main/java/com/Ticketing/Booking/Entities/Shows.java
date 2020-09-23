@@ -1,5 +1,4 @@
-package com.Ticketing.Theatre.Entity;
-
+package com.Ticketing.Booking.Entities;
 
 import java.util.Date;
 
@@ -13,6 +12,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
@@ -24,27 +24,24 @@ public class Shows {
 	@Column(name = "ID")
 	private int id;
 	
-	@ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "theatreName")
-    private Theatre theatre;
+	@Column(name = "theatreName")
+    private String theatreName;
 
+	@Column(name = "movieName")
+    private String movieName;
+	
 	@Column(name = "SHOWNAME")
 	private String showName;
 	
 	@Column(name = "CAPACITY")
 	private Integer seatingCapacity;
 	
-	@Column(name = "DATE")
-	private Date date;
+	@Column(name = "COST")
+	private Integer cost;
 	
-	public Shows(int id, Theatre theatre, String showName, Integer seatingCapacity, Date date) {
-		super();
-		this.id = id;
-		this.theatre = theatre;
-		this.showName = showName;
-		this.seatingCapacity = seatingCapacity;
-		this.date = date;
-	}
+	@Column(name = "DATE")
+	@JsonFormat(shape=JsonFormat.Shape.STRING, pattern="dd-MM-yyyy")
+	private Date date;
 
 	public int getId() {
 		return id;
@@ -54,12 +51,12 @@ public class Shows {
 		this.id = id;
 	}
 
-	public Theatre getTheatre() {
-		return theatre;
+	public String getTheatreName() {
+		return theatreName;
 	}
 
-	public void setTheatre(Theatre theatre) {
-		this.theatre = theatre;
+	public void setTheatreName(String theatreName) {
+		this.theatreName = theatreName;
 	}
 
 	public String getShowName() {
@@ -84,6 +81,22 @@ public class Shows {
 
 	public void setDate(Date date) {
 		this.date = date;
+	}
+
+	public String getMovieName() {
+		return movieName;
+	}
+
+	public void setMovieName(String movieName) {
+		this.movieName = movieName;
+	}
+
+	public Integer getCost() {
+		return cost;
+	}
+
+	public void setCost(Integer cost) {
+		this.cost = cost;
 	}
 	
 	

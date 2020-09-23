@@ -6,6 +6,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
+import javax.persistence.Column;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +24,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.Ticketing.Booking.DAO.BookingDAO;
 import com.Ticketing.Booking.Service.BookingService;
+import com.Ticketing.Booking.Service.ShowsService;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.Ticketing.Booking.Entities.Booking;
+import com.Ticketing.Booking.Entities.Shows;
 
 @RestController
 @RequestMapping("/")
@@ -35,19 +40,22 @@ public class BookingController {
 	@Autowired
 	BookingDAO bookingDao;
 	
+	@Autowired
+	ShowsService showsService;
+	
 	@RequestMapping("/")
 	public String home() {
 		return "Hello from Booking Service";
 	}
 	
 	@GetMapping("/booking/{username}")
-	public ResponseEntity<Booking> getBooking(@PathVariable String username) {
+	public ResponseEntity<Object> getBooking(@PathVariable String username) {
 		try {
-			Optional<Booking> booking = this.bookingService.getBooking(username);
-			if (!booking.isPresent()) {
+			List<Booking> bookings = this.bookingService.getBooking(username);
+			if (bookings.isEmpty()) {
 				return ResponseEntity.notFound().build();
 			}
-			return ResponseEntity.ok(booking.get());
+			return ResponseEntity.ok(bookings);
 		} catch (Exception e) {
 			return ResponseEntity.badRequest().build();
 		}
@@ -106,9 +114,29 @@ public class BookingController {
 	}
 	
 	@PostMapping("/booking")
-	public ResponseEntity<Booking> addNewBooking(@RequestBody Booking booking, @RequestParam("Role") String role) {
+	public ResponseEntity<Object> addNewBooking(@RequestBody Booking booking, @RequestParam("Role") String role) {
 		try {
 			if(role.equalsIgnoreCase("admin")){
+				List<Shows> shows = this.showsService.getShowsWithTheatreAndMovie(booking.getTheatreName(), booking.getMovieName());
+				if (shows.isEmpty()) {
+					System.out.println("No show present with given theatrename and moviename");
+					return new ResponseEntity<>("No show present with given theatrename and moviename!", HttpStatus.BAD_REQUEST);
+				}
+				else {
+					for(Shows show:shows) {
+						if (show.getDate().compareTo(booking.getDate())==0){
+							Integer remainingTickets = show.getSeatingCapacity()-booking.getTicketCount();
+							if (remainingTickets >=0) {
+								show.setSeatingCapacity(remainingTickets);
+								this.showsService.addShows(show);
+								booking.setCost(booking.getTicketCount()*show.getCost());
+							}
+							else {
+								return new ResponseEntity<>("No tickets left for the show! Tickets remaining are: "+show.getSeatingCapacity(), HttpStatus.BAD_REQUEST);
+							}
+						}
+					}
+				}
 				return ResponseEntity.ok(this.bookingService.addBooking(booking));
 			}
 			return ResponseEntity.badRequest().build();
@@ -118,11 +146,25 @@ public class BookingController {
 	}
 	
 
-	@PutMapping("/booking/{username}")
-	public ResponseEntity<Booking> updateBooking(@RequestBody Booking booking, @RequestParam("Role") String role) {
+	@PutMapping("/booking/{bookingId}")
+	public ResponseEntity<Object> updateBooking(@PathVariable int bookingId, @RequestBody Booking booking, @RequestParam("Role") String role) {
 		try {
 			if(role.equalsIgnoreCase("admin")){
-				this.bookingService.addBooking(booking);
+				Optional<Booking> retrievedBooking = this.bookingService.getBookingWithId(bookingId);
+				if (!retrievedBooking.isPresent()) {
+					return new ResponseEntity<>("Booking not found! ", HttpStatus.BAD_REQUEST);
+				}
+				Booking fetchedBooking = retrievedBooking.get();
+				fetchedBooking.setCost(booking.getCost());
+				fetchedBooking.setDate(booking.getDate());
+				fetchedBooking.setMovieName(booking.getMovieName());
+				fetchedBooking.setShowName(booking.getShowName());
+				fetchedBooking.setTheatreName(booking.getTheatreName());
+				fetchedBooking.setCancelled(booking.getCancelled());
+				fetchedBooking.setTicketCount(booking.getTicketCount());
+				fetchedBooking.setUserName(booking.getUserName());
+				
+				this.bookingService.addBooking(fetchedBooking);
 				return ResponseEntity.ok().build();
 			}
 			return ResponseEntity.badRequest().build();
@@ -131,10 +173,10 @@ public class BookingController {
 		}
 	}
 
-	@DeleteMapping("/booking/{username}")
-	public ResponseEntity<Booking> deleteBooking(@PathVariable String username) {
+	@DeleteMapping("/booking/{bookingId}")
+	public ResponseEntity<Booking> deleteBooking(@PathVariable int bookingId) {
 		try {
-			this.bookingService.deleteBooking(username);
+			this.bookingService.deleteBooking(bookingId);
 			return ResponseEntity.ok().build();
 		} catch (Exception e) {
 			return ResponseEntity.badRequest().build();
